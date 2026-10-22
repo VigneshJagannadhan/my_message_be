@@ -1,0 +1,56 @@
+#!/bin/sh
+# commit-msg hook: enforces Conventional Commits.
+# Git runs this after the message is written and before the commit is created.
+# $1 is the path of the file holding the message. A non-zero exit aborts the commit.
+#
+# Enable once per clone:  git config core.hooksPath .githooks
+
+msg_file="$1"
+
+# Drop comment lines (git adds "# ..." help text when the message comes from an editor).
+message=$(grep -v '^#' "$msg_file")
+subject=$(printf '%s\n' "$message" | sed -n '1p')
+
+fail() {
+  printf '\ncommit rejected: %s\n\n' "$1" >&2
+  printf 'Expected: type(optional-scope): description\n' >&2
+  printf 'Types:    feat fix docs style refactor perf test build ci chore revert\n' >&2
+  printf 'Example:  feat(auth): add login screen\n' >&2
+  printf 'Yours:    %s\n\n' "$subject" >&2
+  exit 1
+}
+
+# Let git-generated messages through (merges, reverts, fixup/squash for rebases).
+case "$subject" in
+  "Merge "*|"Revert "*|"fixup! "*|"squash! "*) exit 0 ;;
+esac
+
+# 1. Conventional Commits format on the first line.
+types='feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert'
+if ! printf '%s\n' "$subject" | grep -Eq "^($types)(\([a-z0-9._/-]+\))?!?: [^ ]"; then
+  fail "first line must match 'type(scope): description'"
+fi
+
+# 2. Description starts lowercase, has no trailing period, first line is at most 72 chars.
+if printf '%s\n' "$subject" | grep -Eq '^[^:]+: [A-Z]'; then
+  fail "description must start with a lowercase letter"
+fi
+if printf '%s\n' "$subject" | grep -Eq '\.$'; then
+  fail "description must not end with a period"
+fi
+if [ "${#subject}" -gt 72 ]; then
+  fail "first line is ${#subject} characters, max is 72"
+fi
+
+# 3. No em dashes anywhere in the message.
+if printf '%s\n' "$message" | grep -q '—'; then
+  fail "em dash found, use a regular hyphen"
+fi
+
+# Optional per-clone extra checks (not versioned): .git/hooks/commit-msg.local
+extra="$(git rev-parse --git-common-dir)/hooks/commit-msg.local"
+if [ -x "$extra" ]; then
+  exec "$extra" "$msg_file"
+fi
+
+exit 0
