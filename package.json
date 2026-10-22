@@ -1,0 +1,44 @@
+{
+  "name": "my_message_be",
+  "version": "0.1.0",
+  "description": "my_message backend (Level 1)",
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "typecheck": "tsc --noEmit",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate dev",
+    "db:deploy": "prisma migrate deploy",
+    "smoke": "tsx scripts/smoke.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "@fastify/cors": "^11.3.1",
+    "@fastify/helmet": "^13.2.0",
+    "@fastify/jwt": "^10.2.5",
+    "@fastify/rate-limit": "^11.2.1",
+    "@prisma/adapter-pg": "^7.10.1",
+    "@prisma/client": "^7.10.1",
+    "argon2": "^0.45.1",
+    "dotenv": "^18.0.8",
+    "fastify": "^5.12.7",
+    "pg": "^8.23.1",
+    "socket.io": "^4.8.4",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.5",
+    "prisma": "^7.10.1",
+    "socket.io-client": "^4.8.4",
+    "tsx": "^4.23.15",
+    "typescript": "^6.0.3"
+  },
+  "private": true,
+  "engines": {
+    "node": ">=22"
+  }
+}
